@@ -25,6 +25,9 @@
 /* Begin PBXFileReference section */
 		527F72E629E9242A00D338EE /* RICH Analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "RICH Analysis"; sourceTree = BUILT_PRODUCTS_DIR; };
 		527F72E929E9242A00D338EE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		52C43C252A2F94FC00B039FE /* weightModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = weightModel.h; sourceTree = "<group>"; };
+		52C43C272A2F9CB700B039FE /* tooLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tooLib.h; sourceTree = "<group>"; };
+		52C43C282A2F9D2600B039FE /* myTree.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = myTree.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +44,7 @@
 		527F72DD29E9242A00D338EE = {
 			isa = PBXGroup;
 			children = (
+				52C43C262A2F9CA600B039FE /* tooLib */,
 				527F72E829E9242A00D338EE /* RICH Analysis */,
 				527F72E729E9242A00D338EE /* Products */,
 			);
@@ -58,8 +62,19 @@
 			isa = PBXGroup;
 			children = (
 				527F72E929E9242A00D338EE /* main.cpp */,
+				52C43C252A2F94FC00B039FE /* weightModel.h */,
 			);
 			path = "RICH Analysis";
+			sourceTree = "<group>";
+			usesTabs = 1;
+		};
+		52C43C262A2F9CA600B039FE /* tooLib */ = {
+			isa = PBXGroup;
+			children = (
+				52C43C272A2F9CB700B039FE /* tooLib.h */,
+				52C43C282A2F9D2600B039FE /* myTree.h */,
+			);
+			path = tooLib;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -238,16 +253,172 @@
 		527F72EE29E9242A00D338EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
+				OTHER_LDFLAGS = (
+					"-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-lCore",
+					"-lImt",
+					"-lRIO",
+					"-lNet",
+					"-lHist",
+					"-lGraf",
+					"-lGraf3d",
+					"-lGpad",
+					"-lROOTVecOps",
+					"-lTree",
+					"-lTreePlayer",
+					"-lRint",
+					"-lPostscript",
+					"-lMatrix",
+					"-lPhysics",
+					"-lMathCore",
+					"-lThread",
+					"-lMultiProc",
+					"-lROOTDataFrame",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-stdlib=libc++",
+					"-lpthread",
+					"-lm",
+					"-ldl\n-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-lCore",
+					"-lImt",
+					"-lRIO",
+					"-lNet",
+					"-lHist",
+					"-lGraf",
+					"-lGraf3d",
+					"-lGpad",
+					"-lROOTVecOps",
+					"-lTree",
+					"-lTreePlayer",
+					"-lRint",
+					"-lPostscript",
+					"-lMatrix",
+					"-lPhysics",
+					"-lMathCore",
+					"-lThread",
+					"-lMultiProc",
+					"-lROOTDataFrame",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-stdlib=libc++",
+					"-lpthread",
+					"-lm",
+					"-ldl\n-L$(ROOTSYS)/lib/root",
+					"-lCore",
+					"-lImt",
+					"-lRIO",
+					"-lNet",
+					"-lHist",
+					"-lGraf",
+					"-lGraf3d",
+					"-lGpad",
+					"-lROOTVecOps",
+					"-lTree",
+					"-lTreePlayer",
+					"-lRint",
+					"-lPostscript",
+					"-lMatrix",
+					"-lPhysics",
+					"-lMathCore",
+					"-lThread",
+					"-lMultiProc",
+					"-lROOTDataFrame",
+					"-Wl,-rpath,$(ROOTSYS)/lib/root",
+					"-stdlib=libc++",
+					"-lpthread",
+					"-lm",
+					"-ldl",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				ROOTSYS = /opt/homebrew/Cellar/root/6.26.04_2;
+				USER_HEADER_SEARCH_PATHS = "$(ROOTSYS)/include/root";
 			};
 			name = Debug;
 		};
 		527F72EF29E9242A00D338EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
+				OTHER_LDFLAGS = (
+					"-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-lCore",
+					"-lImt",
+					"-lRIO",
+					"-lNet",
+					"-lHist",
+					"-lGraf",
+					"-lGraf3d",
+					"-lGpad",
+					"-lROOTVecOps",
+					"-lTree",
+					"-lTreePlayer",
+					"-lRint",
+					"-lPostscript",
+					"-lMatrix",
+					"-lPhysics",
+					"-lMathCore",
+					"-lThread",
+					"-lMultiProc",
+					"-lROOTDataFrame",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-stdlib=libc++",
+					"-lpthread",
+					"-lm",
+					"-ldl\n-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-lCore",
+					"-lImt",
+					"-lRIO",
+					"-lNet",
+					"-lHist",
+					"-lGraf",
+					"-lGraf3d",
+					"-lGpad",
+					"-lROOTVecOps",
+					"-lTree",
+					"-lTreePlayer",
+					"-lRint",
+					"-lPostscript",
+					"-lMatrix",
+					"-lPhysics",
+					"-lMathCore",
+					"-lThread",
+					"-lMultiProc",
+					"-lROOTDataFrame",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-stdlib=libc++",
+					"-lpthread",
+					"-lm",
+					"-ldl\n-L$(ROOTSYS)/lib/root",
+					"-lCore",
+					"-lImt",
+					"-lRIO",
+					"-lNet",
+					"-lHist",
+					"-lGraf",
+					"-lGraf3d",
+					"-lGpad",
+					"-lROOTVecOps",
+					"-lTree",
+					"-lTreePlayer",
+					"-lRint",
+					"-lPostscript",
+					"-lMatrix",
+					"-lPhysics",
+					"-lMathCore",
+					"-lThread",
+					"-lMultiProc",
+					"-lROOTDataFrame",
+					"-Wl,-rpath,$(ROOTSYS)/lib/root",
+					"-stdlib=libc++",
+					"-lpthread",
+					"-lm",
+					"-ldl",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				ROOTSYS = /opt/homebrew/Cellar/root/6.26.04_2;
+				USER_HEADER_SEARCH_PATHS = "$(ROOTSYS)/include/root";
 			};
 			name = Release;
 		};
