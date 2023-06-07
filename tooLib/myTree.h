@@ -74,67 +74,64 @@ public:
     double recBeta;
     double recMass;
 
-    myTree (const char * path) {
+    myTree (const char * path, const char * treeName) {
 
-        pTree = new TChain("dailyData");
+        pTree = new TChain(treeName);
         pTree -> Add(path);
-        SetRichAddress(pTree);
-        SetTrackerAddress(pTree);
-        SetTofAddress(pTree);
     }
 
-    void SetRichAddress(TChain * inTree) {
+    void SetRichAddress() {
 
-        inTree -> SetBranchAddress("nHits",            &nHits);
-        inTree -> SetBranchAddress("pointX",        pointX);
-        inTree -> SetBranchAddress("pointY",        pointY);
-        inTree -> SetBranchAddress("pointZ",        pointZ);
-        inTree -> SetBranchAddress("isCrossed",        isCrossed);
-        inTree -> SetBranchAddress("Npe",             Npe);
-        inTree -> SetBranchAddress("Cpe",             Cpe);
-        inTree -> SetBranchAddress("Channel",         Channel);
+        pTree -> SetBranchAddress("nHits",            &nHits);
+        pTree -> SetBranchAddress("pointX",        pointX);
+        pTree -> SetBranchAddress("pointY",        pointY);
+        pTree -> SetBranchAddress("pointZ",        pointZ);
+        pTree -> SetBranchAddress("isCrossed",        isCrossed);
+        pTree -> SetBranchAddress("Npe",             Npe);
+        pTree -> SetBranchAddress("Cpe",             Cpe);
+        pTree -> SetBranchAddress("Channel",         Channel);
 
-        inTree -> SetBranchAddress("nRings",         &nRings);
-        inTree -> SetBranchAddress("richBeta",         richBeta);
-        inTree -> SetBranchAddress("isNaF",         isNaF);
-        inTree -> SetBranchAddress("tileIndex",     tileIndex);
+        pTree -> SetBranchAddress("nRings",         &nRings);
+        pTree -> SetBranchAddress("richBeta",         richBeta);
+        pTree -> SetBranchAddress("isNaF",         isNaF);
+        pTree -> SetBranchAddress("tileIndex",     tileIndex);
     }
-    void SetTrackerAddress(TChain * inTree) {
+    void SetTrackerAddress() {
 
-        inTree -> SetBranchAddress("nTrack",         &nTrack);
-        inTree -> SetBranchAddress("trPointX",         &trPointX);
-        inTree -> SetBranchAddress("trPointY",         &trPointY);
-        inTree -> SetBranchAddress("trPointZ",         &trPointZ);
-        inTree -> SetBranchAddress("trRadX",         &trRadX);
-        inTree -> SetBranchAddress("trRadY",         &trRadY);
-        inTree -> SetBranchAddress("trRadZ",         &trRadZ);
-        inTree -> SetBranchAddress("trRigidity",     &trRigidity);
-        inTree -> SetBranchAddress("trCharge",         &trCharge);
-        inTree -> SetBranchAddress("trInnerCharge", &trInnerCharge);
-        inTree -> SetBranchAddress("trLayerCharge", trLayerCharge);
-        inTree -> SetBranchAddress("trChi2X",         &trChi2X);
-        inTree -> SetBranchAddress("trChi2Y",         &trChi2Y);
-        inTree -> SetBranchAddress("trTheta",         &trTheta);
-        inTree -> SetBranchAddress("trPhi",         &trPhi);
+        pTree -> SetBranchAddress("nTrack",         &nTrack);
+        pTree -> SetBranchAddress("trPointX",         &trPointX);
+        pTree -> SetBranchAddress("trPointY",         &trPointY);
+        pTree -> SetBranchAddress("trPointZ",         &trPointZ);
+        pTree -> SetBranchAddress("trRadX",         &trRadX);
+        pTree -> SetBranchAddress("trRadY",         &trRadY);
+        pTree -> SetBranchAddress("trRadZ",         &trRadZ);
+        pTree -> SetBranchAddress("trRigidity",     &trRigidity);
+        pTree -> SetBranchAddress("trCharge",         &trCharge);
+        pTree -> SetBranchAddress("trInnerCharge", &trInnerCharge);
+        pTree -> SetBranchAddress("trLayerCharge", trLayerCharge);
+        pTree -> SetBranchAddress("trChi2X",         &trChi2X);
+        pTree -> SetBranchAddress("trChi2Y",         &trChi2Y);
+        pTree -> SetBranchAddress("trTheta",         &trTheta);
+        pTree -> SetBranchAddress("trPhi",         &trPhi);
     }
-    void SetTofAddress(TChain * inTree) {
+    void SetTofAddress() {
 
-        inTree -> SetBranchAddress("tofQL",         tofQL);
-        inTree -> SetBranchAddress("tofX",            tofX);
-        inTree -> SetBranchAddress("tofY",            tofY);
-        inTree -> SetBranchAddress("tofZ",            tofZ);
-        inTree -> SetBranchAddress("tofRadX",        &tofRadX);
-        inTree -> SetBranchAddress("tofRadY",        &tofRadY);
-        inTree -> SetBranchAddress("tofRadZ",        &tofRadZ);
-        inTree -> SetBranchAddress("tofTheta",        &tofTheta);
-        inTree -> SetBranchAddress("tofPhi",        &tofPhi);
-        inTree -> SetBranchAddress("tofBeta",        &tofBeta);
+        pTree -> SetBranchAddress("tofQL",         tofQL);
+        pTree -> SetBranchAddress("tofX",            tofX);
+        pTree -> SetBranchAddress("tofY",            tofY);
+        pTree -> SetBranchAddress("tofZ",            tofZ);
+        pTree -> SetBranchAddress("tofRadX",        &tofRadX);
+        pTree -> SetBranchAddress("tofRadY",        &tofRadY);
+        pTree -> SetBranchAddress("tofRadZ",        &tofRadZ);
+        pTree -> SetBranchAddress("tofTheta",        &tofTheta);
+        pTree -> SetBranchAddress("tofPhi",        &tofPhi);
+        pTree -> SetBranchAddress("tofBeta",        &tofBeta);
     }
-    void SetRecAddress(TChain * inTree) {
+    void SetRecAddress() {
 
-        inTree -> SetBranchAddress("recR",             &recR);
-        inTree -> SetBranchAddress("recBeta",         &recBeta);
-        inTree -> SetBranchAddress("recMass",         &recMass);
+        pTree -> SetBranchAddress("recR",             &recR);
+        pTree -> SetBranchAddress("recBeta",         &recBeta);
+        pTree -> SetBranchAddress("recMass",         &recMass);
     }
 
     void MakeRichAddress(TTree * inTree) {

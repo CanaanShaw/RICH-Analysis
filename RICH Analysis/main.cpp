@@ -24,26 +24,28 @@
 #include "TH2.h"
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-	string ss = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data/*.root";
-	myTree tree(ss.c_str());
+	
+	// File initialization
+	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data/*.root";
+	myTree tree(dataPath.c_str(), "dailyData");
+	tree.SetRichAddress();
+	tree.SetTrackerAddress();
+	tree.SetTofAddress();
 
-	TString outFilename= "GaussFitEllipseFromXCode";
-	TString path 	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.";
-			path	+= outFilename;
-			path	+= ".root";
-	TFile * outFile 	= new TFile(path, "RECREATE");
-
+	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.GaussFitEllipseFromXCode.root";
+	TFile * outFile = new TFile(outPath.c_str(), "RECREATE");
 	outFile -> cd();
 	TTree * outTree = new TTree("treeRec", "Rec Result");
 	tree.MakeRecAddress(outTree);
 	tree.MakeRichAddress(outTree);
 
-	TFile * map2 = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
-	TH2D * nMap2 = (TH2D * )map2 -> Get("a");
+	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
+	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
 
+	// Static correction of RICH spacial position
 	const double dx = 0.09;
 	const double dy = -0.075;
+	
 	for (int iEvent = 0; iEvent < tree.GetEntries(); iEvent ++) {
 		
 		tree.GetEntry(iEvent);
@@ -120,7 +122,7 @@ int main(int argc, const char * argv[]) {
 			tree.recR = rRefine;
 
 			using namespace TMath;
-			double n2 = nMap2 -> GetBinContent(nMap2 -> FindBin(radA, radB));
+			double n2 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
 			double Theta = ATan(tree.recR / RichConst::NaFTransmissionHeight());
 			tree.recBeta = 1.0 / n2 / cos(Theta);
 			tree.recMass = tree.trRigidity * tree.trInnerCharge / tree.recBeta * sqrt(1.0 - square(tree.recBeta));
