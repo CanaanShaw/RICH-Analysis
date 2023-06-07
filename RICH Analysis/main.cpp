@@ -5,23 +5,23 @@
 //  Created by Canaan Shaw on 2023/4/14.
 //
 
-#include <iostream>
+#include "sharedHeader.h"
 #include "weightModel.h"
-#include "TTree.h"
 #include "tooLib.h"
+#include "myTree.h"
 
-#include <cstring>
-#include <sstream>
-#include "TFile.h"
-#include "TTree.h"
-#include "TVectorD.h"
-#include "TH3.h"
-#include "TMath.h"
-
-#include "TString.h"
-#include <vector>
-#include "TRandom2.h"
-#include "TH2.h"
+vector < double > FindCrossPoint(vector < double > hits, vector < double > ringCenter,
+								 vector < double > radCenter, double theta, double phi, double z = 47.17) {
+	// Intersection point of each line between photon hit and emission point, with spin plane going through ringCenter.
+	
+	double t = -1.0 * (hits[0] * sin(theta) * cos(phi) + hits[1] * sin(theta) * sin(phi)) / ((radCenter[0] - hits[0]) * sin(theta) * cos(phi) + (radCenter[1] - hits[1]) * sin(theta) * sin(phi) + z * cos(theta));
+	
+	double xOut = hits[0] + (radCenter[0] - hits[0]) * t;
+	double yOut = hits[1] + (radCenter[1] - hits[1]) * t;
+	double zOut = z * t;
+	
+	return vector < double > {xOut, yOut, zOut};
+}
 
 int main(int argc, const char * argv[]) {
 	
@@ -38,7 +38,8 @@ int main(int argc, const char * argv[]) {
 	TTree * outTree = new TTree("treeRec", "Rec Result");
 	tree.MakeRecAddress(outTree);
 	tree.MakeRichAddress(outTree);
-
+	tree.MakeTrackerAddress(outTree);
+	
 	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
 	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
 
@@ -54,20 +55,24 @@ int main(int argc, const char * argv[]) {
 
 		if (tree.Select()) {
 
+			// Tracker extrapolated photon hit position with correction
 			double centerA = tree.trPointX + dx;
 			double centerB = tree.trPointY + dy;
 			vector < double > center {centerA, centerB};
 			
+			// Tracker extrapolated radiation emission point with correction
 			double radA = tree.trRadX + dx;
 			double radB = tree.trRadY + dy;
 			vector < double > radCenter {radA, radB};
 
+			// Photon hits position without ones crossed by particles
 			vector < vector < double > > hits;
 			for (int iHit = 0; iHit < tree.nHits; iHit ++) {
 				if (!tree.isCrossed[iHit]) {
-
-					vector < double > tempHit {tree.pointX[iHit] - centerA, tree.pointY[iHit] - centerB, 0};
-					hits.push_back(spinY(spinZ(tempHit, tree.trPhi), tree.trTheta));
+					vector < double > tempHit {tree.pointX[iHit], tree.pointY[iHit], 0};
+					hits.push_back(tempHit);
+					
+//					hits.push_back(FindCrossPoint(tempHit, center, radCenter, tree.trTheta, tree.trPhi));
 				}
 			}
 
@@ -76,11 +81,12 @@ int main(int argc, const char * argv[]) {
 				continue;
 			}
 
+			// Distances of each photon hit to ring center
 			vector < double > rHits;
 			for (int i = 0; i < hits.size(); i ++) {
 				
-				double r_i = distance3D(vector < double > {0, 0, 0}, hits[i]) * cos(tree.trTheta);
-				if (r_i > 23 || r_i < 5) continue;
+				double r_i = distance3D(vector < double > {centerA, centerB, 0}, hits[i]) * cos(tree.trTheta);
+				if (r_i > 30 || r_i < 5) continue;
 				rHits.push_back(r_i);
 			}
 
@@ -89,7 +95,7 @@ int main(int argc, const char * argv[]) {
 			double maxWeight = 0;
 			double rInitialGuess = -1.0;
 
-			for (double r_i = 5.0; r_i < 19.0; r_i += 0.2) {
+			for (double r_i = 5.0; r_i < 23.0; r_i += 0.2) {
 				
 				double weight_i = computeWeight(r_i, rHits);
 				if (maxWeight < weight_i) {
@@ -104,13 +110,13 @@ int main(int argc, const char * argv[]) {
 			vector < double > rHitsClean;
 			for (int rIndex = 0; rIndex < rHits.size(); rIndex ++) {
 
-				if (fabs(rHits[rIndex] - rInitialGuess) < 1) rHitsClean.push_back(rHits[rIndex]);
+				if (fabs(rHits[rIndex] - rInitialGuess) < 3) rHitsClean.push_back(rHits[rIndex]);
 			}
 
 			if (rHitsClean.size() < 6 || rHitsClean.size() * 1.0 / rHits.size() < 0.5) continue;
 
 			// This Range affects the number of final succesful reconstruction events.
-			for (double r_i = max < double > (rInitialGuess - 0.2, 5.0); r_i < min < double > (rInitialGuess + 0.2, 19.0); r_i += 0.01) {
+			for (double r_i = max < double > (rInitialGuess - 0.2, 5.0); r_i < min < double > (rInitialGuess + 0.2, 23.0); r_i += 0.01) {
 
 				double weight_i = computeWeight(r_i, rHitsClean);
 				if (maxWeightRefine <= weight_i) {
@@ -127,6 +133,8 @@ int main(int argc, const char * argv[]) {
 			tree.recBeta = 1.0 / n2 / cos(Theta);
 			tree.recMass = tree.trRigidity * tree.trInnerCharge / tree.recBeta * sqrt(1.0 - square(tree.recBeta));
 
+			// Correction for position changes from light guide to PMT pixel?
+			
 			outTree -> Fill();
 		}
 	}

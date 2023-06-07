@@ -8,8 +8,7 @@
 #ifndef myTree_h
 #define myTree_h
 
-#include "TChain.h"
-#define MAXIMUM 999
+#include "sharedHeader.h"
 
 class myTree {
 

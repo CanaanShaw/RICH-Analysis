@@ -8,12 +8,9 @@
 #ifndef tooLib_h
 #define tooLib_h
 
-#include <iostream>
-#include <sstream>
-#include <cstring>
-#include <vector>
-//#include "ring.h"
-#include "myTree.h"
+#include "sharedHeader.h"
+
+#define MAXIMUM 999
 
 using namespace std;
 
