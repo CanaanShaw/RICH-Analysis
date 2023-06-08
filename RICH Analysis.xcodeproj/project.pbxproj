@@ -29,6 +29,7 @@
 		52C43C272A2F9CB700B039FE /* tooLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tooLib.h; sourceTree = "<group>"; };
 		52C43C282A2F9D2600B039FE /* myTree.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = myTree.h; sourceTree = "<group>"; };
 		52C43C2D2A30503200B039FE /* sharedHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sharedHeader.h; sourceTree = "<group>"; };
+		52C43C302A319BC900B039FE /* testFunctions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testFunctions.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +65,7 @@
 			children = (
 				527F72E929E9242A00D338EE /* main.cpp */,
 				52C43C252A2F94FC00B039FE /* weightModel.h */,
+				52C43C302A319BC900B039FE /* testFunctions.h */,
 			);
 			path = "RICH Analysis";
 			sourceTree = "<group>";

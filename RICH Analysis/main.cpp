@@ -10,19 +10,6 @@
 #include "tooLib.h"
 #include "myTree.h"
 
-vector < double > FindCrossPoint(vector < double > hits, vector < double > ringCenter,
-								 vector < double > radCenter, double theta, double phi, double z = 47.17) {
-	// Intersection point of each line between photon hit and emission point, with spin plane going through ringCenter.
-	
-	double t = -1.0 * (hits[0] * sin(theta) * cos(phi) + hits[1] * sin(theta) * sin(phi)) / ((radCenter[0] - hits[0]) * sin(theta) * cos(phi) + (radCenter[1] - hits[1]) * sin(theta) * sin(phi) + z * cos(theta));
-	
-	double xOut = hits[0] + (radCenter[0] - hits[0]) * t;
-	double yOut = hits[1] + (radCenter[1] - hits[1]) * t;
-	double zOut = z * t;
-	
-	return vector < double > {xOut, yOut, zOut};
-}
-
 int main(int argc, const char * argv[]) {
 	
 	// File initialization
@@ -52,6 +39,7 @@ int main(int argc, const char * argv[]) {
 		tree.GetEntry(iEvent);
 		if (iEvent % 10000 == 0)
 			cout << "Current: " << iEvent << "	out of " << tree.GetEntries() << endl;
+		if (iEvent > 1000000) break;
 
 		if (tree.Select()) {
 
@@ -71,8 +59,6 @@ int main(int argc, const char * argv[]) {
 				if (!tree.isCrossed[iHit]) {
 					vector < double > tempHit {tree.pointX[iHit], tree.pointY[iHit], 0};
 					hits.push_back(tempHit);
-					
-//					hits.push_back(FindCrossPoint(tempHit, center, radCenter, tree.trTheta, tree.trPhi));
 				}
 			}
 
@@ -80,57 +66,57 @@ int main(int argc, const char * argv[]) {
 			if (hitsAvailable < 5) {
 				continue;
 			}
-
-			// Distances of each photon hit to ring center
-			vector < double > rHits;
-			for (int i = 0; i < hits.size(); i ++) {
+			
+			double maxWeight = 0.0;
+			double theta_c = 0.0;
+			
+			// Find the most possible Cherenkov angle theta_i
+			for (double theta_i = 0.2; theta_i < 0.4; theta_i += 0.01) {
 				
-				double r_i = distance3D(vector < double > {centerA, centerB, 0}, hits[i]) * cos(tree.trTheta);
-				if (r_i > 30 || r_i < 5) continue;
-				rHits.push_back(r_i);
-			}
-
-			if (rHits.size() < 3 || rHits.size() * 1.0 / hits.size() < 0.5) continue;
-
-			double maxWeight = 0;
-			double rInitialGuess = -1.0;
-
-			for (double r_i = 5.0; r_i < 23.0; r_i += 0.2) {
+				double semiMajorAxis = 0.5 * RichConst::aglTransmissionHeight() * (tan(tree.trTheta + theta_i) - tan(tree.trTheta - theta_i));
+				double semiMinorAxis = RichConst::aglTransmissionHeight() / cos(tree.trTheta) * tan(theta_i);
 				
-				double weight_i = computeWeight(r_i, rHits);
-				if (maxWeight < weight_i) {
-					maxWeight = weight_i;
-					rInitialGuess = r_i;
+				// Compute the center of the ellipse
+//				vector < double > ellipseCenter {centerA + semiMajorAxis * cos(tree.trPhi), centerB + semiMajorAxis * sin(tree.trPhi)};
+				double rad2Center = RichConst::aglTransmissionHeight() * tan(tree.trTheta - theta_i) + semiMajorAxis;
+				double phi = atan((centerB - radB) / (centerA - radA));
+				if (centerA - radA < 0) phi += TMath::Pi();
+				vector < double > ellipseCenter {radA + rad2Center * cos(phi) , radB + rad2Center * sin(phi)};
+//				cout << "(" << radA << ", " << radB << "), " << "(" << centerA << ", " << centerB << "), " << "(" << ellipseCenter[0] << ", " << ellipseCenter[1] << ")\n";
+//				cout << "(" << radA << ", " << radB << "), " << "(" << centerA << ", " << centerB << "), " << tree.trPhi << endl;
+//				double rad2Center = distance(radCenter, ellipseCenter);
+//				cout << (ellipseCenter[0] - centerA) / (centerA - radA) << endl;
+//				cout << rad2Center - distance(radCenter, center) << endl;
+				
+				// Compute the likelihood of theta_i
+				double weight = 1.0;
+				for (int i = 0; i < hits.size(); i ++) {
+					
+					double hit2Rad = distance(radCenter, hits[i]);
+					double hit2Center = distance(ellipseCenter, hits[i]);
+//					cout << fabs(distance(ellipseCenter, center)) << endl;
+					
+					if (hit2Center > 25.0) continue;
+					// Angle phi being radCenter-ellipseCenter-hit
+					double cosPhi = (square(rad2Center) + square(hit2Center) - square(hit2Rad)) / 2.0 / rad2Center / hit2Center;
+					
+					// rExpected being the expected distance of the point on the ellipse to the center, which is on the direction of photon hit to center.
+					double rExpected = sqrt(square(semiMajorAxis * cosPhi) + square(semiMinorAxis * sqrt(1.0 - cosPhi * cosPhi)));
+					weight *= computeWeight2(hit2Center, rExpected);
+				}
+				
+				if (maxWeight < weight) {
+					maxWeight = weight;
+					theta_c = theta_i;
 				}
 			}
-
-			double maxWeightRefine = 0;
-			double rRefine = -1.0;
-
-			vector < double > rHitsClean;
-			for (int rIndex = 0; rIndex < rHits.size(); rIndex ++) {
-
-				if (fabs(rHits[rIndex] - rInitialGuess) < 3) rHitsClean.push_back(rHits[rIndex]);
-			}
-
-			if (rHitsClean.size() < 6 || rHitsClean.size() * 1.0 / rHits.size() < 0.5) continue;
-
-			// This Range affects the number of final succesful reconstruction events.
-			for (double r_i = max < double > (rInitialGuess - 0.2, 5.0); r_i < min < double > (rInitialGuess + 0.2, 23.0); r_i += 0.01) {
-
-				double weight_i = computeWeight(r_i, rHitsClean);
-				if (maxWeightRefine <= weight_i) {
-					maxWeightRefine = weight_i;
-					rRefine = r_i;
-				}
-			}
-
-			tree.recR = rRefine;
 
 			using namespace TMath;
 			double n2 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
-			double Theta = ATan(tree.recR / RichConst::NaFTransmissionHeight());
-			tree.recBeta = 1.0 / n2 / cos(Theta);
+			n2 = 1.055;
+//			double Theta = ATan(tree.recR / RichConst::aglTransmissionHeight());
+//			tree.recBeta = 1.0 / n2 / cos(Theta);
+			tree.recBeta = 1.0 / n2 / cos(theta_c);
 			tree.recMass = tree.trRigidity * tree.trInnerCharge / tree.recBeta * sqrt(1.0 - square(tree.recBeta));
 
 			// Correction for position changes from light guide to PMT pixel?
