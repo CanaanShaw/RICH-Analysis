@@ -8,6 +8,7 @@
 #ifndef weightModel_h
 #define weightModel_h
 
+#include "../tooLib/sharedHeader.h"
 double computeWeight (double x, std::vector < double > r, double band1 = 2.45, double band2 = 3.25, double ratio = 0.9) {
 
 	double weight = 1.0;

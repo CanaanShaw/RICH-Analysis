@@ -8,6 +8,7 @@
 #ifndef testFunctions_h
 #define testFunctions_h
 
+#include "../tooLib/sharedHeader.h"
 vector < double > FindCrossPoint(vector < double > hits, vector < double > ringCenter,
 								 vector < double > radCenter, double theta, double phi, double z = 47.17) {
 	// Intersection point of each line between photon hit and emission point, with spin plane going through ringCenter.

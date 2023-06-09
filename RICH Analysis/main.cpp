@@ -5,30 +5,34 @@
 //  Created by Canaan Shaw on 2023/4/14.
 //
 
-#include "sharedHeader.h"
+#include "../tooLib/sharedHeader.h"
 #include "weightModel.h"
-#include "tooLib.h"
-#include "myTree.h"
+#include "../tooLib/tooLib.h"
+#include "../tooLib/myTree.h"
 
 int main(int argc, const char * argv[]) {
 	
 	// File initialization
-	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data/*.root";
-	myTree tree(dataPath.c_str(), "dailyData");
+//	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data/*.root";
+//	myTree tree(dataPath.c_str(), "dailyData");
+	cout << "Reading from file: " << argv[1] << endl;
+	myTree tree(argv[1], "dailyData");
 	tree.SetRichAddress();
 	tree.SetTrackerAddress();
 	tree.SetTofAddress();
 
-	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.GaussFitEllipseFromXCode.root";
-	TFile * outFile = new TFile(outPath.c_str(), "RECREATE");
+//	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.GaussFitEllipseFromXCode.root";
+//	TFile * outFile = new TFile(outPath.c_str(), "RECREATE");
+	cout << "Writing to file: " << argv[2] << endl;
+	TFile * outFile = new TFile(argv[2], "RECREATE");
 	outFile -> cd();
 	TTree * outTree = new TTree("treeRec", "Rec Result");
 	tree.MakeRecAddress(outTree);
 	tree.MakeRichAddress(outTree);
 	tree.MakeTrackerAddress(outTree);
 	
-	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
-	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
+//	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
+//	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
 
 	// Static correction of RICH spacial position
 	const double dx = 0.09;
@@ -123,8 +127,8 @@ int main(int argc, const char * argv[]) {
 			
 //			if (theta_c == 0) continue;
 
-			double n2 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
-			n2 = 1.055;
+//			double n2 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
+			double n2 = 1.055;
 			tree.recBeta = 1.0 / n2 / cos(theta_c);
 			tree.recMass = tree.trRigidity * tree.trInnerCharge / tree.recBeta * sqrt(1.0 - square(tree.recBeta));
 
