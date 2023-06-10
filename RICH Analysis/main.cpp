@@ -30,6 +30,8 @@ int main(int argc, const char * argv[]) {
 	tree.MakeRecAddress(outTree);
 	tree.MakeRichAddress(outTree);
 	tree.MakeTrackerAddress(outTree);
+	double theta_c;		// Reconstructed cherenkov angle
+	outTree -> Branch("theta_c", &theta_c, "theta_c/D");
 	
 //	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
 //	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
@@ -73,7 +75,7 @@ int main(int argc, const char * argv[]) {
 			}
 			
 			double maxWeight = 0.0;
-			double theta_c = 0.0;
+			theta_c = 0.0;
 			double theta = atan(distance(center, radCenter) / RichConst::aglTransmissionHeight());
 			double phi = atan((centerB - radB) / (centerA - radA));
 			if (centerA - radA < 0) phi += TMath::Pi();
