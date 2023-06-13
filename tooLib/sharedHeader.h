@@ -12,6 +12,9 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
+#include <math.h>
+#include <utility>
+#include <random>
 
 #include "TString.h"
 #include "TRandom2.h"
