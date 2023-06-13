@@ -10,7 +10,7 @@
 
 #include "../tooLib/sharedHeader.h"
 
-double weightModel (double x, double r, double band1 = 0.5, double band2 = 1.0, double ratio = 0.8) {
+double weightModel (double x, double r, double band1 = 0.3, double band2 = 0.8, double ratio = 0.8) {
 
 	double weight;
 	double dist = fabs(x - r);

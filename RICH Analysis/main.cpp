@@ -7,6 +7,7 @@
 
 #include "../tooLib/sharedHeader.h"
 #include "weightModel.h"
+#include "recEllipse.h"
 #include "../tooLib/tooLib.h"
 #include "../tooLib/myTree.h"
 
