@@ -10,13 +10,16 @@
 
 #include "../tooLib/sharedHeader.h"
 
-double weightModel (double x, double r, double band1 = 0.3, double band2 = 0.8, double ratio = 0.8) {
+double weightModel (double x, double r, double band1 = 0.1, double band2 = 0.7, double ratio = 0.6666) {
 
 	double weight;
 	double dist = fabs(x - r);
-	if (dist < 1.0) {
-		weight = exp(1.0);
-		return weight;
+//	if (dist < 1.0) {
+//		weight = exp(1.0);
+//		return weight;
+//	}
+	if (dist > 3) {
+		return 1.0;
 	}
 	
 	weight = exp(ratio / (1.0 + fabs(pow(dist / band1, 4))) + (1.0 - ratio) / (1.0 + pow(dist / band2, 3)));

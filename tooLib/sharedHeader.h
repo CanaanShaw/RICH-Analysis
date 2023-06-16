@@ -25,5 +25,9 @@
 #include "TH3.h"
 #include "TMath.h"
 #include "TChain.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+#include "TEllipse.h"
+#include "TBox.h"
 
 #endif /* sharedHeader_h */

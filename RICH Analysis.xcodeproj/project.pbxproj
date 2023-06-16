@@ -23,6 +23,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		522D9A302A3C29F400B8949E /* defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = defs.h; sourceTree = "<group>"; };
 		527879CC2A371E9800CE997F /* recPack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recPack.h; sourceTree = "<group>"; };
 		527879CD2A371EE300CE997F /* recEllipse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recEllipse.h; sourceTree = "<group>"; };
 		527F72E629E9242A00D338EE /* RICH Analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "RICH Analysis"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,8 +69,8 @@
 				527F72E929E9242A00D338EE /* main.cpp */,
 				52C43C252A2F94FC00B039FE /* weightModel.h */,
 				52C43C302A319BC900B039FE /* testFunctions.h */,
-				527879CC2A371E9800CE997F /* recPack.h */,
 				527879CD2A371EE300CE997F /* recEllipse.h */,
+				522D9A302A3C29F400B8949E /* defs.h */,
 			);
 			path = "RICH Analysis";
 			sourceTree = "<group>";
@@ -80,6 +81,7 @@
 			children = (
 				52C43C272A2F9CB700B039FE /* tooLib.h */,
 				52C43C282A2F9D2600B039FE /* myTree.h */,
+				527879CC2A371E9800CE997F /* recPack.h */,
 				52C43C2D2A30503200B039FE /* sharedHeader.h */,
 			);
 			path = tooLib;
