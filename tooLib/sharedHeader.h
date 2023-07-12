@@ -29,5 +29,6 @@
 #include "TGraph.h"
 #include "TEllipse.h"
 #include "TBox.h"
+#include "TProfile2D.h"
 
 #endif /* sharedHeader_h */

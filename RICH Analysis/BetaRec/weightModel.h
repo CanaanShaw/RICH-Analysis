@@ -8,7 +8,7 @@
 #ifndef weightModel_h
 #define weightModel_h
 
-#include "../tooLib/sharedHeader.h"
+#include "../../tooLib/sharedHeader.h"
 
 double weightModel (double x, double r, double band1 = 0.1, double band2 = 0.7, double ratio = 0.6666) {
 

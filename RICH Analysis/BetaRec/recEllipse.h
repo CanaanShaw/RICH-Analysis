@@ -8,7 +8,7 @@
 #ifndef recEllipse_h
 #define recEllipse_h
 
-#include "tooLib.h"
+#include "../../tooLib/tooLib.h"
 
 struct Ellipse{
 	// five parameters to discribe an ellipse
@@ -26,7 +26,7 @@ Ellipse GetEllipse(vector < double > radCenter, double trTheta, double trPhi, do
 	double semiMajorAxis = 0.5 * RichConst::aglTransmissionHeight() * (tan(trTheta + theta_i) - tan(trTheta - theta_i));
 	double semiMinorAxis = RichConst::aglTransmissionHeight() / cos(trTheta) * tan(theta_i);
 
-	// Distance from radCenter to ellipseCenter from top view.
+	// Distance from radCenter to ellipseCenter from top view
 	double rad2Center = RichConst::aglTransmissionHeight() * tan(trTheta - theta_i) + semiMajorAxis;
 	
 	double ellipseCenterX = radCenter[0] + rad2Center * cos(trPhi);

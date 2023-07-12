@@ -24,6 +24,7 @@
 
 /* Begin PBXFileReference section */
 		522D9A302A3C29F400B8949E /* defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = defs.h; sourceTree = "<group>"; };
+		522D9A332A3C4E6800B8949E /* ProcessRawRecData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProcessRawRecData.h; sourceTree = "<group>"; };
 		527879CC2A371E9800CE997F /* recPack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recPack.h; sourceTree = "<group>"; };
 		527879CD2A371EE300CE997F /* recEllipse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recEllipse.h; sourceTree = "<group>"; };
 		527F72E629E9242A00D338EE /* RICH Analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "RICH Analysis"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -46,6 +47,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		522D9A312A3C4DE000B8949E /* BetaRec */ = {
+			isa = PBXGroup;
+			children = (
+				52C43C252A2F94FC00B039FE /* weightModel.h */,
+				52C43C302A319BC900B039FE /* testFunctions.h */,
+				527879CD2A371EE300CE997F /* recEllipse.h */,
+				522D9A302A3C29F400B8949E /* defs.h */,
+				527F72E929E9242A00D338EE /* main.cpp */,
+			);
+			path = BetaRec;
+			sourceTree = "<group>";
+		};
+		522D9A322A3C4DF900B8949E /* RefractiveIndex */ = {
+			isa = PBXGroup;
+			children = (
+				522D9A332A3C4E6800B8949E /* ProcessRawRecData.h */,
+			);
+			path = RefractiveIndex;
+			sourceTree = "<group>";
+		};
 		527F72DD29E9242A00D338EE = {
 			isa = PBXGroup;
 			children = (
@@ -66,11 +87,8 @@
 		527F72E829E9242A00D338EE /* RICH Analysis */ = {
 			isa = PBXGroup;
 			children = (
-				527F72E929E9242A00D338EE /* main.cpp */,
-				52C43C252A2F94FC00B039FE /* weightModel.h */,
-				52C43C302A319BC900B039FE /* testFunctions.h */,
-				527879CD2A371EE300CE997F /* recEllipse.h */,
-				522D9A302A3C29F400B8949E /* defs.h */,
+				522D9A322A3C4DF900B8949E /* RefractiveIndex */,
+				522D9A312A3C4DE000B8949E /* BetaRec */,
 			);
 			path = "RICH Analysis";
 			sourceTree = "<group>";

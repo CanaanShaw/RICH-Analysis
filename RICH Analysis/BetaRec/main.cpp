@@ -5,14 +5,13 @@
 //  Created by Canaan Shaw on 2023/4/14.
 //
 
-#include "../tooLib/sharedHeader.h"
+#include "../../tooLib/sharedHeader.h"
+#include "../../tooLib/tooLib.h"
+#include "../../tooLib/myTree.h"
+
 #include "weightModel.h"
 #include "recEllipse.h"
-#include "../tooLib/tooLib.h"
-#include "../tooLib/myTree.h"
 #include "defs.h"
-
-#define debugFlag false
 
 int main(int argc, const char * argv[]) {
 	
@@ -25,11 +24,26 @@ int main(int argc, const char * argv[]) {
 	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.GaussFitEllipseFromXCode.root";
 	TFile * outFile = new TFile(outPath.c_str(), "RECREATE");
 	
-	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
-	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
+//	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
+	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/RefractiveMap.root", "READ");
+	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 	
-	TFile * modelFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/weightModel", "READ");
-	TH1D * weightModelMap = (TH1D *) modelFile -> Get("weightModel");
+//	TFile * modelFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/weightModel", "READ");
+	TFile * modelFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/WeightModel.root", "READ");
+	TH1D * weightModelMap = (TH1D *) modelFile -> Get("WeightModel");
+
+	#ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
+		TFile * alignmentFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/20232023-7-1 HoughTransform/alignmentResult.root", "READ");
+		TTree * alignmentTree = (TTree *) alignmentFile -> Get("alignment");
+	
+		int alignmentTime;
+		alignmentTree -> SetBranchAddress("time", &alignmentTime);
+		
+		double biasX;
+		double biasY;
+		alignmentTree -> SetBranchAddress("baisX", &biasX);
+		alignmentTree -> SetBranchAddress("baisY", &biasY);
+	#endif
 #else
 	
 	cout << "Reading from file: " << argv[1] << endl;
@@ -38,11 +52,11 @@ int main(int argc, const char * argv[]) {
 	cout << "Writing to file: " << argv[2] << endl;
 	TFile * outFile = new TFile(argv[2], "RECREATE");
 	
-	TFile * mapFile = new TFile("/afs/cern.ch/user/j/jianan/private/betaRec/RefractiveMap.root", "READ");
-	TH2D * refractiveMap = (TH2D *) mapFile -> Get("a");
+	TFile * mapFile = new TFile("/afs/cern.ch/user/j/jianan/private/RICHAnalysis/RefractiveIndex/analysis/RefractiveMap.root", "READ");
+	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 	
-	TFile * modelFile = new TFile("/afs/cern.ch/user/j/jianan/private/betaRec/weightModel", "READ");
-	TH1D * weightModelMap = (TH1D *) modelFile -> Get("weightModel");
+	TFile * modelFile = new TFile("/afs/cern.ch/user/j/jianan/private/RICHAnalysis/BetaRec/analysis/weightModel.root", "READ");
+	TH1D * weightModelMap = (TH1D *) modelFile -> Get("WeightModel");
 #endif
 	
 	tree.SetRichAddress();
@@ -54,18 +68,15 @@ int main(int argc, const char * argv[]) {
 	tree.MakeRecAddress(outTree);
 	tree.MakeRichAddress(outTree);
 	tree.MakeTrackerAddress(outTree);
-	double recTheta;		// Reconstructed cherenkov angle
-	outTree -> Branch("recTheta", &recTheta, "recTheta/D");
+	
 	int inliers;
 	outTree -> Branch("inliers", &inliers, "inliers/I");
 	double inlierDistance[MAXIMUM];
 	outTree -> Branch("inlierDistance", inlierDistance, "inlierDistance[inliers]/D");
-	
-	
 
 	// Static correction of RICH spacial position
-	const double dx = 0.09;
-	const double dy = -0.075;
+	double dx = 0.09;
+	double dy = -0.075;
 	
 	// Start processing data
 	for (int iEvent = 0; iEvent < tree.GetEntries(); iEvent ++) {
@@ -73,9 +84,17 @@ int main(int argc, const char * argv[]) {
 		tree.GetEntry(iEvent);
 		if (iEvent % 10000 == 0)
 			cout << "Current: " << iEvent << "	out of " << tree.GetEntries() << endl;
-		if (iEvent > 500000) break;
+		if (iEvent > 1000000) break;
 
 		if (tree.Select()) {
+			
+#ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
+			alignmentTime = 0;
+			int iAlignmentEvent = 0;
+			while (alignmentTime < tree.AMSTime) alignmentTree -> GetEntry(iAlignmentEvent ++);
+			dx = biasX;
+			dy = biasY;
+#endif
 
 			// Tracker extrapolated photon hit position with correction
 			double centerA = tree.trPointX + dx;
@@ -94,8 +113,13 @@ int main(int argc, const char * argv[]) {
 //			double crossedCenterY = 0;
 			for (int iHit = 0; iHit < tree.nHits; iHit ++) {
 				
-				vector < double > tempHit {tree.pointX[iHit], tree.pointY[iHit], 0};
-				if (!tree.isCrossed[iHit]) {
+				vector < double > tempHit {
+					tree.pointX[iHit],
+					tree.pointY[iHit],
+					distance(center, vector < double > {tree.pointX[iHit], tree.pointY[iHit]})
+				};
+				
+				if (!tree.isCrossed[iHit] && tempHit[2] <= 22.0) {
 					hits.push_back(tempHit);
 				}
 //				else if(distance(center, tempHit) < 10) {
@@ -111,12 +135,30 @@ int main(int argc, const char * argv[]) {
 //				cout << "(" << centerA - crossedCenterX << ",	" << centerB - crossedCenterY << ")\n";
 //			}
 			
-			unsigned long hitsAvailable = hits.size();
-			if (hitsAvailable < 5) {
-				continue;
+			// Scan possible radius range
+			int maxInliers = 0;
+			double rInitial = 0;
+			vector < vector < double > > hitsSelected;
+			for (double r = 4.0; r < 20.0; r += 1.0) {
+				int tempInliers = 0;
+				vector < vector < double > > tempHit;
+				for (int i = 0; i < hits.size(); i ++) {
+					if (hits[i][2] > r - 2 && hits[i][2] < r + 2) {
+						tempInliers ++;
+						tempHit.push_back(hits[i]);
+					}
+				}
+
+				if (tempInliers >= maxInliers) {
+					maxInliers = tempInliers;
+					rInitial = r;
+					hitsSelected = tempHit;
+				}
 			}
 			
-			recTheta = 0.0;
+			if (hitsSelected.size() < 5 || hitsSelected.size() * 1.0 / hits.size() < 0.6) continue;
+			
+			tree.recTheta = 0.0;
 			inliers = 0;
 			inlierDistance[0] = 0;
 			Ellipse recEllipse;
@@ -136,19 +178,19 @@ int main(int argc, const char * argv[]) {
 				
 				// Compute the likelihood of theta_i
 				double weight = 1.0;
-				double hitsAvailable = hits.size();
+				double hitsAvailable = hitsSelected.size();
 				vector < double > tempInlierDistance;
-				for (int i = 0; i < hits.size(); i ++) {
+				for (int i = 0; i < hitsSelected.size(); i ++) {
 					
-					double hit2Center = distance(ellipseCenter, hits[i]);
+					double hit2Center = distance(ellipseCenter, hitsSelected[i]);
 					if (hit2Center > 22.0) {
 						hitsAvailable --;
 						continue;
 					}
 					
 					// rExpected being the expected distance of the point on the ellipse to the center, which is on the direction of photon hit to center.
-					double rExpected = GetEllipseRadius(ellipse_i, hits[i]);
-#ifdef WEIGHT_MODEL_CORRECTION
+					double rExpected = GetEllipseRadius(ellipse_i, hitsSelected[i]);
+#ifdef USING_WEIGHT_MODEL_CORRECTION
 					weight *= exp(weightModelMap -> GetBinContent(weightModelMap -> FindBin(rExpected - hit2Center)) * 1.0 / maxBinContent);
 #else
 					weight *= weightModel(hit2Center, rExpected);
@@ -159,17 +201,17 @@ int main(int argc, const char * argv[]) {
 				}
 				
 				if (tempInlierDistance.size() < 4) continue;
-				if (hitsAvailable * 1.0 / hits.size() < 0.5 || hitsAvailable < 4) continue;
+				if (hitsAvailable * 1.0 / hitsSelected.size() < 0.8 || hitsAvailable < 4) continue;
 				
 				if (maxWeight < weight) {
 					maxWeight = weight;
-					recTheta = theta_i;
+					tree.recTheta = theta_i;
 					recEllipse = ellipse_i;
 					vecInlierDistace = tempInlierDistance;
 				}
 			}
 			
-			if (recTheta == 0) continue;
+			if (tree.recTheta == 0) continue;
 			
 			inliers = (int) vecInlierDistace.size();
 			for (int ii = 0; ii < inliers; ii ++) {
@@ -184,13 +226,16 @@ int main(int argc, const char * argv[]) {
 			
 			// do refraction correction
 #ifdef USING_REFRACTION_CORRECTION
-			tree.recBeta = 1.0 / n2 / sqrt(1.0 - square(1.0 / n2 * sin(recTheta)));
+			tree.recBeta = 1.0 / n2 / sqrt(1.0 - square(1.0 / n2 * sin(tree.recTheta)));
 #else
-			tree.recBeta = 1.0 / n2 / cos(recTheta);
+			tree.recBeta = 1.0 / n2 / cos(tree.recTheta);
 #endif
-//			if (tree.recBeta > 1.0) {
-//				tree.recBeta = max(1.0 / n2 / cos(recTheta - 0.005), 1.0);
-//			}
+
+#ifdef USING_BETA_BOUNDARY_CORRECTION
+			if (tree.recBeta > 1.0) {
+				tree.recBeta = 1.0 / n2 / sqrt(1.0 - square(1.0 / n2 * sin(tree.recTheta - 0.0025))); 
+			}
+#endif
 			tree.recMass = tree.trRigidity * tree.trInnerCharge / tree.recBeta * sqrt(1.0 - square(tree.recBeta));
 
 			// Correction for position changes from light guide to PMT pixel?

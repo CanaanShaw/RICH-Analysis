@@ -424,7 +424,7 @@ namespace RichConst {
     const double RICepsln = 0.002; // Epsilon
     const double RICpmtsupportheight = 11.1 - 2.0; // support structure height
     const double PMT_electronics = 3.0; // PMT side size
-    const double cato_inner_pixel = 0.42; // Inner pixel side size in the photocathode
+    const double cato_inner_pixel = 0.42; // Innerr pixel side size in the photocathode
     const double cathode_length = RICcatolength + RICcatogap;
     const double eff_rad_clarity=0.0055;          // clarity used in charge recosntruction
     const int      RICmaxentries = 44;
