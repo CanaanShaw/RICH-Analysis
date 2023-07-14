@@ -18,22 +18,28 @@ int main(int argc, const char * argv[]) {
 	// File initialization
 #ifdef LOCAL_TEST
 	
-	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data/*.root";
+	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data2/*.root";
 	myTree tree(dataPath.c_str(), "dailyData");
 	
 	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.GaussFitEllipseFromXCode.root";
 	TFile * outFile = new TFile(outPath.c_str(), "RECREATE");
 	
+	string nMapPath = "/Users/canaanshaw/Desktop/CppFiles/RefractiveMap.root";
+	cout << "Loading refractive index file: " << nMapPath << endl;
 //	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/RefractiveMap.root", "READ");
-	TFile * mapFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/RefractiveMap.root", "READ");
+	TFile * mapFile = new TFile(nMapPath.c_str(), "READ");
 	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 	
+	string weightModelPath = "/Users/canaanshaw/Desktop/CppFiles/WeightModel.root";
+	cout << "Loading weight model file: " << weightModelPath << endl;
 //	TFile * modelFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/weightModel", "READ");
-	TFile * modelFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/WeightModel.root", "READ");
+	TFile * modelFile = new TFile(weightModelPath.c_str(), "READ");
 	TH1D * weightModelMap = (TH1D *) modelFile -> Get("WeightModel");
 
 	#ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
-		TFile * alignmentFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/20232023-7-1 HoughTransform/alignmentResult.root", "READ");
+		string alignmentPath = "/Users/canaanshaw/Desktop/CppFiles/2023-7-1 HoughTransform/alignmentResult.root";
+		cout << "Loading dynamic alignment file: " << alignmentPath << endl;
+		TFile * alignmentFile = new TFile(alignmentPath.c_str(), "READ");
 		TTree * alignmentTree = (TTree *) alignmentFile -> Get("alignment");
 	
 		int alignmentTime;
@@ -41,8 +47,8 @@ int main(int argc, const char * argv[]) {
 		
 		double biasX;
 		double biasY;
-		alignmentTree -> SetBranchAddress("baisX", &biasX);
-		alignmentTree -> SetBranchAddress("baisY", &biasY);
+		alignmentTree -> SetBranchAddress("biasX", &biasX);
+		alignmentTree -> SetBranchAddress("biasY", &biasY);
 	#endif
 #else
 	
@@ -52,13 +58,33 @@ int main(int argc, const char * argv[]) {
 	cout << "Writing to file: " << argv[2] << endl;
 	TFile * outFile = new TFile(argv[2], "RECREATE");
 	
-	TFile * mapFile = new TFile("/afs/cern.ch/user/j/jianan/private/RICHAnalysis/RefractiveIndex/analysis/RefractiveMap.root", "READ");
+	string nMapPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/RefractiveIndex/analysis/RefractiveMap.root";
+	cout << "Loading refractive index file: " << nMapPath << endl;
+	TFile * mapFile = new TFile(nMapPath, "READ");
 	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 	
-	TFile * modelFile = new TFile("/afs/cern.ch/user/j/jianan/private/RICHAnalysis/BetaRec/analysis/weightModel.root", "READ");
+	string weightModelPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/BetaRec/analysis/weightModel.root";
+	cout << "Loading weight model file: " << weightModelPath << endl;
+	TFile * modelFile = new TFile(weightModelPath, "READ");
 	TH1D * weightModelMap = (TH1D *) modelFile -> Get("WeightModel");
+	
+	#ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
+		string alignmentPath = "/Users/canaanshaw/Desktop/CppFiles/2023-7-1 HoughTransform/alignmentResult.root";
+		cout << "Loading dynamic alignment file: " << alignmentPath << endl;
+		TFile * alignmentFile = new TFile(alignmentPath.c_str(), "READ");
+		TTree * alignmentTree = (TTree *) alignmentFile -> Get("alignment");
+
+		int alignmentTime;
+		alignmentTree -> SetBranchAddress("time", &alignmentTime);
+		
+		double biasX;
+		double biasY;
+		alignmentTree -> SetBranchAddress("baisX", &biasX);
+		alignmentTree -> SetBranchAddress("baisY", &biasY);
+	#endif
 #endif
 	
+	tree.SetAMSAddress();
 	tree.SetRichAddress();
 	tree.SetTrackerAddress();
 	tree.SetTofAddress();
@@ -91,7 +117,10 @@ int main(int argc, const char * argv[]) {
 #ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
 			alignmentTime = 0;
 			int iAlignmentEvent = 0;
-			while (alignmentTime < tree.AMSTime) alignmentTree -> GetEntry(iAlignmentEvent ++);
+			while (alignmentTime < tree.AMSTime) {
+				alignmentTree -> GetEntry(iAlignmentEvent ++);
+			}
+			
 			dx = biasX;
 			dy = biasY;
 #endif
@@ -190,6 +219,7 @@ int main(int argc, const char * argv[]) {
 					
 					// rExpected being the expected distance of the point on the ellipse to the center, which is on the direction of photon hit to center.
 					double rExpected = GetEllipseRadius(ellipse_i, hitsSelected[i]);
+					
 #ifdef USING_WEIGHT_MODEL_CORRECTION
 					weight *= exp(weightModelMap -> GetBinContent(weightModelMap -> FindBin(rExpected - hit2Center)) * 1.0 / maxBinContent);
 #else

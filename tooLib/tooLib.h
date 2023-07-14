@@ -460,12 +460,18 @@ namespace RichConst {
     const double radPos             = -71.87;        // RICH Radiator position with respect to AMS02.
     const double radRadius            = 60.0;            // RICH Radiator Radius.
 
+        
+
+    // Mean transmission distance of photon radiated from NaF.
     double NaFTransmissionHeight () {
-        return 0.5 * NaFHeight + radMirGap + mirHeight + lgMirGap;
+//        return 0.5 * NaFHeight + radMirGap + mirHeight + lgMirGap;
+        return -0.5 * NaFHeight + radHeight + foilHeight + radMirGap + mirHeight + lgMirGap;
     }
 
+    // Mean transmission distance of photon radiated from Agl.
     double aglTransmissionHeight () {
-        return 0.5 * aglHeight + radMirGap + mirHeight + lgMirGap;
+//        return 0.5 * aglHeight + radMirGap + mirHeight + lgMirGap;
+        return -0.5 * aglHeight + radHeight + foilHeight + radMirGap + mirHeight + lgMirGap;
     }
 
     double pmtTotalHeight() {
@@ -475,6 +481,8 @@ namespace RichConst {
     double pmtPos() {
         return radHeight + foilHeight + radMirGap + mirHeight +
             lgMirGap + pmtTotalHeight() / 2.0;
+//        return radHeight + foilHeight + radMirGap + mirHeight +
+//            lgMirGap + pmtTotalHeight() / 2.0;
     }
 
 }
