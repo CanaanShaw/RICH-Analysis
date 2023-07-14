@@ -459,8 +459,11 @@ namespace RichConst {
     const double radMirGap             = 0.1;            // Gap length between Radiator and Mirror.
     const double radPos             = -71.87;        // RICH Radiator position with respect to AMS02.
     const double radRadius            = 60.0;            // RICH Radiator Radius.
-
-        
+    
+    // RICH height from top of the radiator plane to top of the PMT plane.
+    double richHeight () {
+        return radHeight + foilHeight + radMirGap + mirHeight + lgMirGap;
+    }
 
     // Mean transmission distance of photon radiated from NaF.
     double NaFTransmissionHeight () {

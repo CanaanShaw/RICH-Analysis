@@ -12,6 +12,7 @@
 #include "weightModel.h"
 #include "recEllipse.h"
 #include "defs.h"
+#include "testFunctions.h"
 
 int main(int argc, const char * argv[]) {
 	
@@ -101,8 +102,8 @@ int main(int argc, const char * argv[]) {
 	outTree -> Branch("inlierDistance", inlierDistance, "inlierDistance[inliers]/D");
 
 	// Static correction of RICH spacial position
-	double dx = 0.09;
-	double dy = -0.075;
+	double dx = 0.083845;
+	double dy = -0.069346;
 	
 	// Start processing data
 	for (int iEvent = 0; iEvent < tree.GetEntries(); iEvent ++) {
@@ -187,6 +188,19 @@ int main(int argc, const char * argv[]) {
 			
 			if (hitsSelected.size() < 5 || hitsSelected.size() * 1.0 / hits.size() < 0.6) continue;
 			
+#ifdef USING_REFRACTION_CORRECTION
+			for (int i = 0; i < hitsSelected.size(); i ++) {
+				#ifdef USING_N_CORRECTION
+					hitsSelected[i] = RefractionCorrection(radCenter,
+														   hitsSelected[i],
+														   refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB)));
+				#else
+					hitsSelected[i] = RefractionCorrection(radCenter, hitsSelected[i]);
+				#endif
+			}
+#endif
+			
+			
 			tree.recTheta = 0.0;
 			inliers = 0;
 			inlierDistance[0] = 0;
@@ -249,21 +263,16 @@ int main(int argc, const char * argv[]) {
 			}
 			
 #ifdef USING_N_CORRECTION
-			double n2 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
+			double n = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
 #else
-			double n2 = 1.055;
+			double n = 1.055;
 #endif
 			
-			// do refraction correction
-#ifdef USING_REFRACTION_CORRECTION
-			tree.recBeta = 1.0 / n2 / sqrt(1.0 - square(1.0 / n2 * sin(tree.recTheta)));
-#else
-			tree.recBeta = 1.0 / n2 / cos(tree.recTheta);
-#endif
+			tree.recBeta = 1.0 / n / cos(tree.recTheta);
 
 #ifdef USING_BETA_BOUNDARY_CORRECTION
 			if (tree.recBeta > 1.0) {
-				tree.recBeta = 1.0 / n2 / sqrt(1.0 - square(1.0 / n2 * sin(tree.recTheta - 0.0025))); 
+				tree.recBeta = 1.0 / n / sqrt(1.0 - square(1.0 / n * sin(tree.recTheta - 0.0025)));
 			}
 #endif
 			tree.recMass = tree.trRigidity * tree.trInnerCharge / tree.recBeta * sqrt(1.0 - square(tree.recBeta));
