@@ -284,7 +284,7 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				OTHER_LDFLAGS = (
-					"-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-L/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-lCore",
 					"-lImt",
 					"-lRIO",
@@ -304,11 +304,12 @@
 					"-lThread",
 					"-lMultiProc",
 					"-lROOTDataFrame",
-					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-stdlib=libc++",
 					"-lpthread",
 					"-lm",
-					"-ldl\n-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-ldl",
+					"-L/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-lCore",
 					"-lImt",
 					"-lRIO",
@@ -328,11 +329,12 @@
 					"-lThread",
 					"-lMultiProc",
 					"-lROOTDataFrame",
-					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-stdlib=libc++",
 					"-lpthread",
 					"-lm",
-					"-ldl\n-L$(ROOTSYS)/lib/root",
+					"-ldl",
+					"-L$(ROOTSYS)/lib/root",
 					"-lCore",
 					"-lImt",
 					"-lRIO",
@@ -359,7 +361,7 @@
 					"-ldl",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				ROOTSYS = /opt/homebrew/Cellar/root/6.26.04_2;
+				ROOTSYS = /opt/homebrew/Cellar/root/6.28.04;
 				USER_HEADER_SEARCH_PATHS = "$(ROOTSYS)/include/root";
 			};
 			name = Debug;
@@ -370,7 +372,7 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				OTHER_LDFLAGS = (
-					"-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-L/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-lCore",
 					"-lImt",
 					"-lRIO",
@@ -390,11 +392,12 @@
 					"-lThread",
 					"-lMultiProc",
 					"-lROOTDataFrame",
-					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-stdlib=libc++",
 					"-lpthread",
 					"-lm",
-					"-ldl\n-L/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-ldl",
+					"-L/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-lCore",
 					"-lImt",
 					"-lRIO",
@@ -414,11 +417,12 @@
 					"-lThread",
 					"-lMultiProc",
 					"-lROOTDataFrame",
-					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.26.04_2/lib/root",
+					"-Wl,-rpath,/opt/homebrew/Cellar/root/6.28.04/lib/root",
 					"-stdlib=libc++",
 					"-lpthread",
 					"-lm",
-					"-ldl\n-L$(ROOTSYS)/lib/root",
+					"-ldl",
+					"-L$(ROOTSYS)/lib/root",
 					"-lCore",
 					"-lImt",
 					"-lRIO",
@@ -445,7 +449,7 @@
 					"-ldl",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				ROOTSYS = /opt/homebrew/Cellar/root/6.26.04_2;
+				ROOTSYS = /opt/homebrew/Cellar/root/6.28.04;
 				USER_HEADER_SEARCH_PATHS = "$(ROOTSYS)/include/root";
 			};
 			name = Release;

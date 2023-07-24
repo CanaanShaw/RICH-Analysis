@@ -25,26 +25,30 @@ vector < double > FindCrossPoint(vector < double > hits, vector < double > ringC
 vector < double > RefractionCorrection (vector < double > radCenter, vector < double > hit, double n = 1.055,
 										double radiatorThickness = 2.5, double z = RichConst::richHeight() - RichConst::aglHeight) {
 	// Return the actual position the photon hits on the PMT plane without the refraction effect.
-	
 	double d = distance(radCenter, hit);
-	const double eps = 1e-3;
+	const double eps = 1e-2;
 	
+	
+	// Change forward propagation to backward propagation
+	// in order to minimum the error
 	double x1 = 0;
-	for (x1 = 0; x1 < d; x1 += 1e-5) {
-		double theta = atan(x1 / radiatorThickness);
-		double x2 = z * tan(asin(n * sin(theta)));
+	double x2 = 0;
+	double theta = 0;
+	for (x1 = 0; x1 <= d / 2.0; x1 += 1e-5) {
+		theta = atan(x1 / radiatorThickness);
+		x2 = z * tan(asin(n * sin(theta)));
 		if (fabs(x1 + x2 - d) < eps) break;
 	}
 	
 	if (x1 > d / 2.0) {
 		return hit;
-		
 	}
 	
 	double dActual = x1 * (z + radiatorThickness) / radiatorThickness;
 	
 	double phi = atan((hit[1] - radCenter[1]) / (hit[0] - radCenter[0]));
 	if (hit[0] - radCenter[0] < 0) phi += TMath::Pi();
+	
 //	cout << radCenter[0] + dActual * cos(phi) << ":	" << hit[0] << endl;
 	return vector < double > {radCenter[0] + dActual * cos(phi), radCenter[1] + dActual * sin(phi), hit[2]};
 }

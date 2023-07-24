@@ -16,7 +16,8 @@
 
 int main(int argc, const char * argv[]) {
 	
-	// File initialization
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - // File Initialization
+	
 #ifdef LOCAL_TEST
 	
 	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data2/*.root";
@@ -61,16 +62,16 @@ int main(int argc, const char * argv[]) {
 	
 	string nMapPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/RefractiveIndex/analysis/RefractiveMap.root";
 	cout << "Loading refractive index file: " << nMapPath << endl;
-	TFile * mapFile = new TFile(nMapPath, "READ");
+	TFile * mapFile = new TFile(nMapPath.c_str(), "READ");
 	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 	
-	string weightModelPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/BetaRec/analysis/weightModel.root";
+	string weightModelPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/RefractiveIndex/analysis/WeightModel.root";
 	cout << "Loading weight model file: " << weightModelPath << endl;
-	TFile * modelFile = new TFile(weightModelPath, "READ");
+	TFile * modelFile = new TFile(weightModelPath.c_str(), "READ");
 	TH1D * weightModelMap = (TH1D *) modelFile -> Get("WeightModel");
 	
 	#ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
-		string alignmentPath = "/Users/canaanshaw/Desktop/CppFiles/2023-7-1 HoughTransform/alignmentResult.root";
+		string alignmentPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/Alignment/analysis/alignmentResult.root";
 		cout << "Loading dynamic alignment file: " << alignmentPath << endl;
 		TFile * alignmentFile = new TFile(alignmentPath.c_str(), "READ");
 		TTree * alignmentTree = (TTree *) alignmentFile -> Get("alignment");
@@ -80,8 +81,8 @@ int main(int argc, const char * argv[]) {
 		
 		double biasX;
 		double biasY;
-		alignmentTree -> SetBranchAddress("baisX", &biasX);
-		alignmentTree -> SetBranchAddress("baisY", &biasY);
+		alignmentTree -> SetBranchAddress("biasX", &biasX);
+		alignmentTree -> SetBranchAddress("biasY", &biasY);
 	#endif
 #endif
 	
@@ -100,10 +101,12 @@ int main(int argc, const char * argv[]) {
 	outTree -> Branch("inliers", &inliers, "inliers/I");
 	double inlierDistance[MAXIMUM];
 	outTree -> Branch("inlierDistance", inlierDistance, "inlierDistance[inliers]/D");
+	
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - // Standard Correction and Hits Selection
 
 	// Static correction of RICH spacial position
-	double dx = 0.083845;
-	double dy = -0.069346;
+	double dx = -0.07;
+	double dy = 0.07;
 	
 	// Start processing data
 	for (int iEvent = 0; iEvent < tree.GetEntries(); iEvent ++) {
@@ -111,11 +114,12 @@ int main(int argc, const char * argv[]) {
 		tree.GetEntry(iEvent);
 		if (iEvent % 10000 == 0)
 			cout << "Current: " << iEvent << "	out of " << tree.GetEntries() << endl;
-		if (iEvent > 1000000) break;
+		if (iEvent > 250000) break;
 
 		if (tree.Select()) {
 			
 #ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
+			
 			alignmentTime = 0;
 			int iAlignmentEvent = 0;
 			while (alignmentTime < tree.AMSTime) {
@@ -125,8 +129,9 @@ int main(int argc, const char * argv[]) {
 			dx = biasX;
 			dy = biasY;
 #endif
-
+			
 			// Tracker extrapolated photon hit position with correction
+			// dx = recCenterX - tree.trPointX
 			double centerA = tree.trPointX + dx;
 			double centerB = tree.trPointY + dy;
 			vector < double > center {centerA, centerB};
@@ -189,31 +194,37 @@ int main(int argc, const char * argv[]) {
 			if (hitsSelected.size() < 5 || hitsSelected.size() * 1.0 / hits.size() < 0.6) continue;
 			
 #ifdef USING_REFRACTION_CORRECTION
+			
 			for (int i = 0; i < hitsSelected.size(); i ++) {
+				
 				#ifdef USING_N_CORRECTION
-					hitsSelected[i] = RefractionCorrection(radCenter,
-														   hitsSelected[i],
-														   refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB)));
+					
+					double nTemp = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
+					if (nTemp == 0) nTemp = 1.055;
+															  
+					// Actually this corresponding refractive index n should be the value at the bottom of the radiator instead of rad center.
+					hitsSelected[i] = RefractionCorrection(radCenter, hitsSelected[i], nTemp);
 				#else
 					hitsSelected[i] = RefractionCorrection(radCenter, hitsSelected[i]);
 				#endif
 			}
 #endif
 			
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - // Beta Reconstruction
 			
 			tree.recTheta = 0.0;
 			inliers = 0;
 			inlierDistance[0] = 0;
 			Ellipse recEllipse;
 			double maxWeight = 0.0;
-			double theta = atan(distance(center, radCenter) / RichConst::aglTransmissionHeight());
+			double theta = atan(distance(center, radCenter) / RichConst::richHeight());
 			double phi = atan((centerB - radB) / (centerA - radA));
 			if (centerA - radA < 0) phi += TMath::Pi();
 			double maxBinContent = weightModelMap -> GetBinContent(weightModelMap -> GetMaximumBin());
 			
-			// Find the most possible Cherenkov angle theta_i
+			// Find the most possible Cherenkov angle theta_ic
 			vector < double > vecInlierDistace;
-			for (double theta_i = 0.1; theta_i < 0.4; theta_i += 0.005) {
+			for (double theta_i = 0.1; theta_i < 0.4; theta_i += 0.0001) {
 				
 				// Compute parameters of ellipse
 				Ellipse ellipse_i = GetEllipse(radCenter, theta, phi, theta_i);
@@ -262,8 +273,11 @@ int main(int argc, const char * argv[]) {
 				inlierDistance[ii] = vecInlierDistace[ii];
 			}
 			
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - // Fill Tree
+			
 #ifdef USING_N_CORRECTION
 			double n = refractiveMap -> GetBinContent(refractiveMap -> FindBin(radA, radB));
+			if (n == 0) n = 1.055;
 #else
 			double n = 1.055;
 #endif
