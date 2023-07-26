@@ -11,6 +11,7 @@
 #include "../../tooLib/tooLib.h"
 #include "../../tooLib/sharedHeader.h"
 #include "../../tooLib/myTree.h"
+//#include "defs.h"
 
 void ProcessRawRecData(const char * readPath, const char * writePath) {
 	// Generate refractive index map and weight model based on raw reconstruction data

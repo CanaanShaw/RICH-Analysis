@@ -13,6 +13,7 @@
 #include "recEllipse.h"
 #include "defs.h"
 #include "testFunctions.h"
+#include "../RefractiveIndex/GausProfile.h"
 
 int main(int argc, const char * argv[]) {
 	
@@ -20,10 +21,10 @@ int main(int argc, const char * argv[]) {
 	
 #ifdef LOCAL_TEST
 	
-	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/data2/*.root";
+	string dataPath = "/Users/canaanshaw/Desktop/CppFiles/RICHAnalysis.data/DataSample/out.1479168000.root";
 	myTree tree(dataPath.c_str(), "dailyData");
 	
-	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/rec.GaussFitEllipseFromXCode.root";
+	string outPath	= "/Users/canaanshaw/Desktop/CppFiles/RICHAnalysis.data/BetaRec/rec.1479168000.root";
 	TFile * outFile = new TFile(outPath.c_str(), "RECREATE");
 	
 	string nMapPath = "/Users/canaanshaw/Desktop/CppFiles/RefractiveMap.root";
@@ -32,7 +33,7 @@ int main(int argc, const char * argv[]) {
 	TFile * mapFile = new TFile(nMapPath.c_str(), "READ");
 	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 	
-	string weightModelPath = "/Users/canaanshaw/Desktop/CppFiles/WeightModel.root";
+	string weightModelPath = "/Users/canaanshaw/Desktop/CppFiles/WeightModel_Default.root";
 	cout << "Loading weight model file: " << weightModelPath << endl;
 //	TFile * modelFile = new TFile("/Users/canaanshaw/Desktop/CppFiles/betaAnalysis/weightModel", "READ");
 	TFile * modelFile = new TFile(weightModelPath.c_str(), "READ");
@@ -93,6 +94,7 @@ int main(int argc, const char * argv[]) {
 
 	outFile -> cd();
 	TTree * outTree = new TTree("treeRec", "Rec Result");
+	tree.MakeAMSAddress(outTree);
 	tree.MakeRecAddress(outTree);
 	tree.MakeRichAddress(outTree);
 	tree.MakeTrackerAddress(outTree);
@@ -114,7 +116,7 @@ int main(int argc, const char * argv[]) {
 		tree.GetEntry(iEvent);
 		if (iEvent % 10000 == 0)
 			cout << "Current: " << iEvent << "	out of " << tree.GetEntries() << endl;
-		if (iEvent > 250000) break;
+		if (iEvent > 100000) break;
 
 		if (tree.Select()) {
 			
@@ -143,6 +145,7 @@ int main(int argc, const char * argv[]) {
 
 			// Photon hits position without ones crossed by particles
 			vector < vector < double > > hits;
+			auto hitsRaw = hits;
 //			int crossedCenterSize = 0;
 //			double crossedCenterX = 0;
 //			double crossedCenterY = 0;
@@ -153,6 +156,8 @@ int main(int argc, const char * argv[]) {
 					tree.pointY[iHit],
 					distance(center, vector < double > {tree.pointX[iHit], tree.pointY[iHit]})
 				};
+				
+				hitsRaw.push_back(tempHit);
 				
 				if (!tree.isCrossed[iHit] && tempHit[2] <= 22.0) {
 					hits.push_back(tempHit);
@@ -227,7 +232,7 @@ int main(int argc, const char * argv[]) {
 			for (double theta_i = 0.1; theta_i < 0.4; theta_i += 0.0001) {
 				
 				// Compute parameters of ellipse
-				Ellipse ellipse_i = GetEllipse(radCenter, theta, phi, theta_i);
+				Ellipse ellipse_i = GetEllipse(radCenter, tree.trTheta, tree.trPhi + TMath::Pi(), theta_i);
 				vector < double > ellipseCenter {ellipse_i.centerX, ellipse_i.centerY};
 				
 				// Compute the likelihood of theta_i
@@ -296,7 +301,12 @@ int main(int argc, const char * argv[]) {
 			outTree -> Fill();
 			
 #ifdef DRAW_ELLIPSE
-			DrawEllipse(iEvent, recEllipse, hits);
+			
+			double radExtCenterX = tree.trRadX + cos(tree.trPhi + TMath::Pi()) * RichConst::richHeight() * sin(tree.trTheta);
+			double radExtCenterY = tree.trRadY + sin(tree.trPhi + TMath::Pi()) * RichConst::richHeight() * sin(tree.trTheta);
+			vector < double > radExtCenter {radExtCenterX, radExtCenterY};
+			if (tree.trTheta > 0.2)
+			DrawEllipse(iEvent, recEllipse, hitsRaw, hitsSelected, center, radExtCenter, radCenter);
 #endif
 		}
 	}

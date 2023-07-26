@@ -25,6 +25,7 @@
 /* Begin PBXFileReference section */
 		522D9A302A3C29F400B8949E /* defs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = defs.h; sourceTree = "<group>"; };
 		522D9A332A3C4E6800B8949E /* ProcessRawRecData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProcessRawRecData.h; sourceTree = "<group>"; };
+		526101782A71151D00B698E6 /* GausProfile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GausProfile.h; sourceTree = "<group>"; };
 		527879CC2A371E9800CE997F /* recPack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recPack.h; sourceTree = "<group>"; };
 		527879CD2A371EE300CE997F /* recEllipse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recEllipse.h; sourceTree = "<group>"; };
 		527F72E629E9242A00D338EE /* RICH Analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "RICH Analysis"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,6 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				522D9A332A3C4E6800B8949E /* ProcessRawRecData.h */,
+				526101782A71151D00B698E6 /* GausProfile.h */,
 			);
 			path = RefractiveIndex;
 			sourceTree = "<group>";

@@ -30,5 +30,6 @@
 #include "TEllipse.h"
 #include "TBox.h"
 #include "TProfile2D.h"
+#include "TF1.h"
 
 #endif /* sharedHeader_h */
