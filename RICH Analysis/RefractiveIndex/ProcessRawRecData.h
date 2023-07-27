@@ -11,16 +11,27 @@
 #include "../../tooLib/tooLib.h"
 #include "../../tooLib/sharedHeader.h"
 #include "../../tooLib/myTree.h"
+#include "GausProfile.h"
 //#include "defs.h"
 
 void ProcessRawRecData(const char * readPath, const char * writePath) {
 	// Generate refractive index map and weight model based on raw reconstruction data
 	
+#ifdef USING_N_CORRECTION
+	string nMapPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/RefractiveIndex/analysis/RefractiveMap.root";
+	cout << "Loading refractive index file: " << nMapPath << endl;
+	TFile * mapFile = new TFile(nMapPath.c_str(), "READ");
+	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
+#endif
+	
+	
 	cout << "Reading from file: " << readPath << endl;
 	myTree tree(readPath, "treeRec");
-	tree.SetAMSAddress();
+//	tree.SetAMSAddress();
 	tree.SetTrackerAddress();
 	tree.SetRecAddress();
+	tree.SetRichAddress();
+	
 	int inliers;
 	double inlierDistance[MAXIMUM];
 	tree.pTree -> SetBranchAddress("inliers", &inliers);
@@ -41,18 +52,19 @@ void ProcessRawRecData(const char * readPath, const char * writePath) {
 	alignmentTree -> SetBranchAddress("biasY", &biasY);
 #endif
 	
-	TProfile2D * RefractiveMap = new TProfile2D("RefractiveMap", "RefractiveMap", 220, -63.75, 63.75, 220, -63.75, 63.75);
+	
+	RadiatorProfile radProfile(220);
 	TH1D * WeightModel = new TH1D("WeightModel", "WeightModel", 1500, -3.0, 3.0);
 	long long entries = tree.GetEntries();
 	for (int i = 0; i < entries; i++) {
 
 		tree.GetEntry(i);
 		if (!tree.Select()) continue;
-		if (tree.recTheta == 0) continue;
-		if (tree.trRigidity < 40) continue;
-		if (tree.trInnerCharge < 0.8 || tree.trInnerCharge > 1.4) continue;
-		if (tree.trTheta > 0.1) continue;
-		if (tree.recBeta < 0.5) continue;
+//		if (tree.recTheta == 0) continue;
+//		if (tree.trRigidity < 40) continue;
+//		if (tree.trInnerCharge < 0.8 || tree.trInnerCharge > 1.4) continue;
+//		if (tree.trTheta > 0.1) continue;
+//		if (tree.recBeta < 0.5) continue;
 		
 		double dx = -0.08;
 		double dy = 0.075;
@@ -70,36 +82,39 @@ void ProcessRawRecData(const char * readPath, const char * writePath) {
 #endif
 		
 #ifdef USING_N_CORRECTION
-		double n0 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(tree.radX + dx, tree.radY + dy));
-		if (n == 0) n = 1.055;
+		double n0 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(tree.trRadX + dx, tree.trRadY + dy));
+		if (n0 == 0) n0 = 1.055;
 #else
 		double n0 = 1.055;
 #endif
 		
 		double n = tree.recBeta * n0;
-		RefractiveMap -> Fill(tree.trRadX + dx, tree.trRadY + dy, n);
+		radProfile.Fill(tree.trRadX + dx, tree.trRadY + dy, n);
 		
 		for (int iInlier = 0; iInlier < inliers; iInlier ++) {
 			WeightModel -> Fill(inlierDistance[iInlier]);
 		}
 	}
+	
+	radProfile.GausFit();
+	TProfile2D * refMap = radProfile.GetResult();
 
 	TString mapPath = writePath;
-	mapPath += "RefractiveMapItered.root";
+	mapPath += "/RefractiveMap.root";
 	TFile * fOut = new TFile(mapPath, "RECREATE");
 	fOut -> cd();
-	RefractiveMap -> Write();
+	refMap -> Write();
+	radProfile.Write(fOut);
 	fOut -> Save();
 	fOut -> Close();
 	
 	TString modelPath = writePath;
-	modelPath += "WeightModel.root";
+	modelPath += "/WeightModel.root";
 	TFile * fOut2 = new TFile(modelPath, "RECREATE");
 	fOut2 -> cd();
 	WeightModel -> Write();
 	fOut2 -> Save();
 	fOut2 -> Close();
-	delete RefractiveMap;
 	delete WeightModel;
 }
 

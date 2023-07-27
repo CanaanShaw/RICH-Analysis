@@ -13,7 +13,7 @@
 #include "recEllipse.h"
 #include "defs.h"
 #include "testFunctions.h"
-#include "../RefractiveIndex/GausProfile.h"
+
 
 int main(int argc, const char * argv[]) {
 	

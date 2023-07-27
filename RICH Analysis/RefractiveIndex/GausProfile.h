@@ -37,11 +37,12 @@ public:
 	
 	RadiatorProfile () {};
 	RadiatorProfile (int nBins);
-	~RadiatorProfile () {};
+	~RadiatorProfile ();
 	vector < int > FindBin (double x, double y);
 	void Fill (double x, double y, double value);
 	void GausFit ();
 	TProfile2D * GetResult ();
+	void Write (TFile * outFile);
 };
 
 
@@ -58,38 +59,50 @@ RadiatorProfile::RadiatorProfile (int segment) {
 	for (int x_i = 0; x_i < nBins; x_i ++) {
 		for (int y_i = 0; y_i < nBins; y_i ++) {
 			
-			this -> tileArr[x_i][y_i].lowerBounds[0] = x_i * sideLengthX;
-			this -> tileArr[x_i][y_i].lowerBounds[1] = y_i * sideLengthY;
+			this -> tileArr[x_i][y_i].lowerBounds[0] = xMin + x_i * sideLengthX;
+			this -> tileArr[x_i][y_i].lowerBounds[1] = yMin + y_i * sideLengthY;
 			this -> tileArr[x_i][y_i].lowerBounds[2] = 0;
 			
-			this -> tileArr[x_i][y_i].lowerBounds[0] = (x_i + 1) * sideLengthX;
-			this -> tileArr[x_i][y_i].lowerBounds[1] = (y_i + 1) * sideLengthY;
-			this -> tileArr[x_i][y_i].lowerBounds[2] = RichConst::aglHeight;
+			this -> tileArr[x_i][y_i].upperBounds[0] = xMin + (x_i + 1) * sideLengthX;
+			this -> tileArr[x_i][y_i].upperBounds[1] = yMin + (y_i + 1) * sideLengthY;
+			this -> tileArr[x_i][y_i].upperBounds[2] = RichConst::aglHeight;
 			
-			this -> tileArr[x_i][y_i].boxCenterX = (x_i + 0.5) * sideLengthX;
-			this -> tileArr[x_i][y_i].boxCenterY = (y_i + 0.5) * sideLengthY;
+			this -> tileArr[x_i][y_i].boxCenterX = xMin + (x_i + 0.5) * sideLengthX;
+			this -> tileArr[x_i][y_i].boxCenterY = yMin + (y_i + 0.5) * sideLengthY;
 			this -> tileArr[x_i][y_i].boxCenterZ = 0.5 * RichConst::aglHeight;
 			
-			string name = convert < string > (x_i + y_i);
-			this -> tileArr[x_i][y_i].tileHist = new TH1D(name.c_str(), name.c_str(), 150, 1.03, 1.06);
+			string nameX = convert < string > (x_i);
+			string nameY = convert < string > (y_i);
+			string name = nameX + ": " + nameY;
+			this -> tileArr[x_i][y_i].tileHist = new TH1D(name.c_str(), name.c_str(), 90, 1.0, 1.1);
 			this -> tileArr[x_i][y_i].n = 0;
 			this -> tileArr[x_i][y_i].nErr = 0;
 		}
 	}
 }
 
+RadiatorProfile::~RadiatorProfile() {
+	for (int x_i = 0; x_i < nBins; x_i ++) {
+		for (int y_i = 0; y_i < nBins; y_i ++) {
+			delete this -> tileArr[x_i][y_i].tileHist;
+		}
+	}
+}
+
 vector < int > RadiatorProfile::FindBin (double x, double y) {
 	
-	int x_i, y_i;
-	for (x_i = 0; x_i < this -> nBins; x_i ++) {
-		for (y_i = 0; y_i < this -> nBins; y_i ++) {
+	int x_i = 0;
+	int y_i = 0;
+	bool flag = 0;
+	for (x_i = 0; x_i < this -> nBins && !flag; x_i ++) {
+		for (y_i = 0; y_i < this -> nBins && !flag; y_i ++) {
 			bool xBox = (x >= this -> tileArr[x_i][y_i].lowerBounds[0] && x < this -> tileArr[x_i][y_i].upperBounds[0]);
 			bool yBox = (y >= this -> tileArr[x_i][y_i].lowerBounds[1] && y < this -> tileArr[x_i][y_i].upperBounds[1]);
-			if (xBox && yBox) break;
+			if (xBox && yBox) flag = 1;
 		}
 	}
 	
-	if (x_i == this -> nBins - 1 && y_i == this -> nBins - 1) return vector < int > {0, 0};
+	if (x_i == this -> nBins && y_i == this -> nBins) return vector < int > {0, 0};
 	return vector < int > {x_i, y_i};
 }
 
@@ -108,8 +121,8 @@ void RadiatorProfile::GausFit () {
 	for (int x_i = 0; x_i < this -> nBins; x_i ++) {
 		for (int y_i = 0; y_i < this -> nBins; y_i ++) {
 			if (this -> tileArr[x_i][y_i].tileHist -> GetEntries() != 0) {
-				TF1 * f = new TF1("f", "[0] * TMath::Gaus(x, [1], [2])", 1.03, 1.06);
-				this -> tileArr[x_i][y_i].tileHist -> Fit(f, "WWEM", "", 1.03, 1.06);
+				TF1 * f = new TF1("f", "gaus", 1.0, 1.1);
+				this -> tileArr[x_i][y_i].tileHist -> Fit(f, "WWEM", "", 1.0, 1.1);
 				this -> tileArr[x_i][y_i].n = f -> GetParameter(1);
 				this -> tileArr[x_i][y_i].nErr = f -> GetParError(1);
 				delete f;
@@ -139,6 +152,17 @@ TProfile2D * RadiatorProfile::GetResult () {
 	}
 	
 	return RefractiveMap;
+}
+
+void RadiatorProfile::Write (TFile * outFile) {
+	for (int x_i = 0; x_i < this -> nBins; x_i ++) {
+		for (int y_i = 0; y_i < this -> nBins; y_i ++) {
+			outFile -> cd();
+			tileArr[x_i][y_i].tileHist -> Write();
+		}
+	}
+	
+	outFile -> Save();
 }
 
 #endif /* GausProfile_h */
