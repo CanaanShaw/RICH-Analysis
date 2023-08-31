@@ -12,7 +12,7 @@
 #include "../../tooLib/sharedHeader.h"
 #include "../../tooLib/myTree.h"
 #include "GausProfile.h"
-//#include "defs.h"
+#include "defs.h"
 
 void ProcessRawRecData(const char * readPath, const char * writePath) {
 	// Generate refractive index map and weight model based on raw reconstruction data
@@ -24,21 +24,18 @@ void ProcessRawRecData(const char * readPath, const char * writePath) {
 	TH2D * refractiveMap = (TH2D *) mapFile -> Get("RefractiveMap");
 #endif
 	
-	
 	cout << "Reading from file: " << readPath << endl;
 	myTree tree(readPath, "treeRec");
-//	tree.SetAMSAddress();
+	tree.SetAMSAddress();
 	tree.SetTrackerAddress();
 	tree.SetRecAddress();
 	tree.SetRichAddress();
 	
-	int inliers;
-	double inlierDistance[MAXIMUM];
-	tree.pTree -> SetBranchAddress("inliers", &inliers);
-	tree.pTree -> SetBranchAddress("inlierDistance", inlierDistance);
+	tree.pTree -> SetBranchAddress("emissionPointX", &emissionPointX);
+	tree.pTree -> SetBranchAddress("emissionPointY", &emissionPointY);
 	
 #ifdef USING_DYNAMIC_ALIGNMENT_CORRECTION
-	string alignmentPath = "/afs/cern.ch/user/j/jianan/private/RICHAnalysis/Alignment/analysis/alignmentResult.root";
+	string alignmentPath = "/Users/canaanshaw/Desktop/CppFiles/2023-7-1 HoughTransform/alignmentResult.root";
 	cout << "Loading dynamic alignment file: " << alignmentPath << endl;
 	TFile * alignmentFile = new TFile(alignmentPath.c_str(), "READ");
 	TTree * alignmentTree = (TTree *) alignmentFile -> Get("alignment");
@@ -54,17 +51,16 @@ void ProcessRawRecData(const char * readPath, const char * writePath) {
 	
 	
 	RadiatorProfile radProfile(220);
-	TH1D * WeightModel = new TH1D("WeightModel", "WeightModel", 1500, -3.0, 3.0);
 	long long entries = tree.GetEntries();
 	for (int i = 0; i < entries; i++) {
 
 		tree.GetEntry(i);
 		if (!tree.Select()) continue;
-//		if (tree.recTheta == 0) continue;
-//		if (tree.trRigidity < 40) continue;
-//		if (tree.trInnerCharge < 0.8 || tree.trInnerCharge > 1.4) continue;
-//		if (tree.trTheta > 0.1) continue;
-//		if (tree.recBeta < 0.5) continue;
+		if (tree.recTheta == 0) continue;
+		if (tree.trRigidity < 50) continue;
+		if (tree.trInnerCharge < 0.8 || tree.trInnerCharge > 1.4) continue;
+		if (tree.trTheta > 0.1) continue;
+		if (tree.recBeta < 0.5) continue;
 		
 		double dx = -0.08;
 		double dy = 0.075;
@@ -82,40 +78,31 @@ void ProcessRawRecData(const char * readPath, const char * writePath) {
 #endif
 		
 #ifdef USING_N_CORRECTION
-		double n0 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(tree.trRadX + dx, tree.trRadY + dy));
-		if (n0 == 0) n0 = 1.055;
+//		double n0 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(tree.trRadX + dx, tree.trRadY + dy));
+		double n0 = refractiveMap -> GetBinContent(refractiveMap -> FindBin(emissionPointX, emissionPointY));
+		if (n0 == 0) n0 = RichConst::refractiveIndexDefault;
 #else
-		double n0 = 1.055;
+		double n0 = RichConst::refractiveIndexDefault;
 #endif
 		
 		double n = tree.recBeta * n0;
-		radProfile.Fill(tree.trRadX + dx, tree.trRadY + dy, n);
-		
-		for (int iInlier = 0; iInlier < inliers; iInlier ++) {
-			WeightModel -> Fill(inlierDistance[iInlier]);
-		}
+//		radProfile.Fill(tree.trRadX + dx, tree.trRadY + dy, n);
+		radProfile.Fill(emissionPointX, emissionPointY, n);
 	}
 	
 	radProfile.GausFit();
 	TProfile2D * refMap = radProfile.GetResult();
+	TProfile2D * refMapErr = radProfile.GetResultErr();
 
 	TString mapPath = writePath;
 	mapPath += "/RefractiveMap.root";
 	TFile * fOut = new TFile(mapPath, "RECREATE");
 	fOut -> cd();
 	refMap -> Write();
+	refMapErr -> Write();
 	radProfile.Write(fOut);
 	fOut -> Save();
 	fOut -> Close();
-	
-	TString modelPath = writePath;
-	modelPath += "/WeightModel.root";
-	TFile * fOut2 = new TFile(modelPath, "RECREATE");
-	fOut2 -> cd();
-	WeightModel -> Write();
-	fOut2 -> Save();
-	fOut2 -> Close();
-	delete WeightModel;
 }
 
 #endif /* ProcessRawRecData_h */

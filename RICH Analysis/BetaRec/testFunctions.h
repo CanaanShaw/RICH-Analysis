@@ -22,8 +22,12 @@ vector < double > FindCrossPoint(vector < double > hits, vector < double > ringC
 	return vector < double > {xOut, yOut, zOut};
 }
 
-vector < double > RefractionCorrection (vector < double > radCenter, vector < double > hit, double n = 1.055,
-										double radiatorThickness = 2.5, double z = RichConst::richHeight() - RichConst::aglHeight) {
+vector < double > RefractionCorrection (vector < double > radCenter,
+										vector < double > hit, double n = RichConst::refractiveIndexDefault,
+										double radiatorThickness = RichConst::aglHeight / 2.0,
+										//	   ^^^^^^^^^^^^^^^^^ should this term be 2.5 / 2.0 ?
+										double z = RichConst::richHeight() - RichConst::aglHeight
+										) {
 	// Return the actual position the photon hits on the PMT plane without the refraction effect.
 	double d = distance(radCenter, hit);
 	const double eps = 1e-2;

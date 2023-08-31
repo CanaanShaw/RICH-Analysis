@@ -270,8 +270,8 @@ public:
             cut[i] = 1;
         }
 
-//        cut[0] = (trTheta < 0.12);
         cut[0] = (trTheta < 0.25);
+//        cut[0] = (trTheta > 0.35);
         cut[1] = (trChi2X < 10);
         cut[2] = (trChi2Y < 10);
         cut[3] = (trRigidity > 0);

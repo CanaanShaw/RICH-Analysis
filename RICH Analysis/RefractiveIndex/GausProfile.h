@@ -42,6 +42,7 @@ public:
 	void Fill (double x, double y, double value);
 	void GausFit ();
 	TProfile2D * GetResult ();
+	TProfile2D * GetResultErr ();
 	void Write (TFile * outFile);
 };
 
@@ -148,6 +149,24 @@ TProfile2D * RadiatorProfile::GetResult () {
 	for (int x_i = 0; x_i < this -> nBins; x_i ++) {
 		for (int y_i = 0; y_i < this -> nBins; y_i ++) {
 			RefractiveMap -> Fill(tileArr[x_i][y_i].boxCenterX, tileArr[x_i][y_i].boxCenterY, tileArr[x_i][y_i].n);
+		}
+	}
+	
+	return RefractiveMap;
+}
+
+TProfile2D * RadiatorProfile::GetResultErr () {
+	TProfile2D * RefractiveMap = new TProfile2D("RefractiveMapErr",
+												"RefractiveMapErr",
+												this -> nBins,
+												xMin,
+												xMax,
+												this -> nBins,
+												yMin,
+												yMax);
+	for (int x_i = 0; x_i < this -> nBins; x_i ++) {
+		for (int y_i = 0; y_i < this -> nBins; y_i ++) {
+			RefractiveMap -> Fill(tileArr[x_i][y_i].boxCenterX, tileArr[x_i][y_i].boxCenterY, tileArr[x_i][y_i].nErr);
 		}
 	}
 	
